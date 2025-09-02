@@ -6,36 +6,39 @@ on:
   pull_request:
     branches: [main]
 
+env:
+  IMAGE_NAME: my-app
+  IMAGE_VERSION: latest
+
 jobs:
   build:
     runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        node-version: [24.x]
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image
+        uses: docker/build-push-action@v5
         with:
-          node-version: ${{ matrix.node-version }}
-          cache: 'npm'
-          cache-dependency-path: package-lock.json
+          context: .
+          file: ./deploy/Dockerfile
+          push: false
+          load: true
+          tags: ${{ env.IMAGE_NAME }}:${{ env.IMAGE_VERSION }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
-      - name: Install dependencies
-        run: npm ci
+      - name: Export Docker image
+        run: |
+          docker save ${{ env.IMAGE_NAME }}:${{ env.IMAGE_VERSION }} | gzip > /tmp/docker-image.tar.gz
 
-      - name: Run linter
-        run: npm run lint
-
-      - name: Run build
-        run: npm run build
-
-      - name: Upload build artifacts
+      - name: Upload Docker image as artifact
         uses: actions/upload-artifact@v4
         with:
-          name: dist-${{ matrix.node-version }}
-          path: dist/
+          name: docker-image
+          path: /tmp/docker-image.tar.gz
+          if-no-files-found: error
