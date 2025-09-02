@@ -15,7 +15,7 @@ ENV BASE_PATH=/
 RUN npm run build
 
 # ======================== Stage 2 ========================
-FROM nginx:1.29.1-alpine
+FROM nginx:1.29.1-alpine-slim
 
 ARG USERNAME=appuser
 ARG USER_UID=4000
@@ -25,8 +25,8 @@ ARG USER_GID=$USER_UID
 RUN addgroup -g $USER_GID $USERNAME \
     && adduser -u $USER_UID -G $USERNAME -h /home/$USERNAME -D $USERNAME
 
-COPY --from=builder /app/build /user/share/nginx/html
-COPY deploy/nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=builder /app/dist /usr/share/nginx/html
+COPY deploy/nginx/conf.d/nginx.conf /etc/nginx/conf.d/default.conf
 
 RUN chown -R $USERNAME:$USERNAME /var/cache/nginx && \
     chown -R $USERNAME:$USERNAME /var/log/nginx && \
