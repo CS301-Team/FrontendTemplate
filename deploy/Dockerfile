@@ -28,11 +28,9 @@ RUN addgroup -g $USER_GID $USERNAME \
 COPY --from=builder /app/dist /usr/share/nginx/html
 COPY deploy/nginx/conf.d/nginx.conf /etc/nginx/conf.d/default.conf
 
-RUN chown -R $USERNAME:$USERNAME /var/cache/nginx && \
-    chown -R $USERNAME:$USERNAME /var/log/nginx && \
-    chown -R $USERNAME:$USERNAME /etc/nginx/conf.d
-RUN touch /var/run/nginx.pid && \
-    chown -R $USERNAME:$USERNAME /var/run/nginx.pid
+RUN chown -R $USERNAME:$USERNAME /var/cache/nginx /var/log/nginx /etc/nginx/conf.d && \
+    touch /var/run/nginx.pid && \
+    chown $USERNAME:$USERNAME /var/run/nginx.pid
 
 USER $USERNAME
 
