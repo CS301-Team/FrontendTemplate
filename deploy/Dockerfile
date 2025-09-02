@@ -26,7 +26,7 @@ RUN addgroup -g $USER_GID $USERNAME \
     && adduser -u $USER_UID -G $USERNAME -h /home/$USERNAME -D $USERNAME
 
 COPY --from=builder /app/build /user/share/nginx/html
-COPY docker/deploy/nginx.conf /etc/nginx/conf.d/default.conf
+COPY deploy/nginx.conf /etc/nginx/conf.d/default.conf
 
 RUN chown -R $USERNAME:$USERNAME /var/cache/nginx && \
     chown -R $USERNAME:$USERNAME /var/log/nginx && \
